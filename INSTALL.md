@@ -3,7 +3,8 @@
 本仓库提供一键安装脚本 `install.sh`(已在 Linux 环境实测通过):
 
 ```bash
-bash install.sh
+bash install.sh                # 自动选择:有 conda 走方式 A,否则走方式 B
+bash install.sh --proxy        # 网络慢/被墙时:走本地代理(默认 http://127.0.0.1:10808)
 ```
 
 脚本自动选择两种方式之一:
@@ -59,6 +60,19 @@ pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple
 - 缺 Python 头文件时脚本会自动 `apt install python3-dev`;
   apt 不可用时自动回退为从 GitHub 下载 CPython 源码生成头文件(需网络能访问 github.com)
 - 方式 B 中 numpy/pandas 用 1.26.4 / 1.5.3(README 里的 1.19.5 / 1.2.0 没有 3.9+ 的包),功能等效
+
+## 网络代理(可选,推荐网络不佳时使用)
+
+如果 WSL 里本地代理软件(如 Clash)监听在 10808 端口,加 `--proxy` 即可,
+脚本会导出 `http_proxy`/`https_proxy`,pip、git、curl、conda 全部自动走代理:
+
+```bash
+bash install.sh --proxy                          # 默认 http://127.0.0.1:10808
+bash install.sh --proxy http://127.0.0.1:7890    # 指定其他代理地址
+PROXY_URL=socks5h://127.0.0.1:10808 bash install.sh   # SOCKS5 代理
+```
+
+> 提示:代理端口以你本机代理软件实际监听的端口为准(10808 是常用端口)。
 
 ## 常见问题
 

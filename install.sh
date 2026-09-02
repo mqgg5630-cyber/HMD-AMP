@@ -6,9 +6,13 @@
 #   bash install.sh            自动选择:有 conda 走方式 A,否则走方式 B
 #   bash install.sh --conda    方式 A:conda + Python 3.8(与论文 README 一致,免编译)
 #   bash install.sh --venv     方式 B:venv + Python 3.9~3.11(源码编译 deep-forest)
+#   bash install.sh --proxy            通过本地代理下载,默认 http://127.0.0.1:10808
+#   bash install.sh --proxy URL        指定代理地址,如 http://127.0.0.1:7890 或
+#                                      socks5h://127.0.0.1:10808
 #
 # 可选环境变量:
 #   VENV_DIR    方式 B 的虚拟环境目录,默认 .venv
+#   PROXY_URL   代理地址(与 --proxy 等价)
 #
 # 两种方式装完后:
 #   方式 A: conda activate HMD-AMP
@@ -30,16 +34,38 @@ SUDO=""
 [ "$(id -u)" -ne 0 ] && SUDO="sudo"
 
 # -------------------------------------------------------------
-# 参数解析:--conda / --venv / 自动
+# 参数解析:--conda / --venv / --proxy [URL] / 自动
 # -------------------------------------------------------------
 MODE=""
-case "${1:-}" in
-    --conda) MODE="conda" ;;
-    --venv)  MODE="venv" ;;
-    "")      if command -v conda >/dev/null 2>&1; then MODE="conda"; else MODE="venv"; fi ;;
-    *)       die "未知参数: $1(支持 --conda / --venv)" ;;
-esac
+PROXY_URL="${PROXY_URL:-}"
+while [ $# -gt 0 ]; do
+    case "$1" in
+        --conda)    MODE="conda" ;;
+        --venv)     MODE="venv" ;;
+        --proxy)    if [ $# -ge 2 ] && [[ "${2:-}" != --* ]]; then
+                        PROXY_URL="$2"; shift
+                    else
+                        PROXY_URL="http://127.0.0.1:10808"
+                    fi ;;
+        --no-proxy) PROXY_URL="" ;;
+        *)          die "未知参数: $1(支持 --conda / --venv / --proxy [URL])" ;;
+    esac
+    shift
+done
+if [ -z "$MODE" ]; then
+    if command -v conda >/dev/null 2>&1; then MODE="conda"; else MODE="venv"; fi
+fi
 log "选择安装方式: $MODE"
+
+# 代理:导出标准代理环境变量,pip / git / curl / conda 都会自动使用
+if [ -n "$PROXY_URL" ]; then
+    case "$PROXY_URL" in
+        socks*) export all_proxy="$PROXY_URL" ALL_PROXY="$PROXY_URL" ;;
+        *)      export http_proxy="$PROXY_URL" https_proxy="$PROXY_URL"
+               export HTTP_PROXY="$PROXY_URL" HTTPS_PROXY="$PROXY_URL" ;;
+    esac
+    log "使用代理: $PROXY_URL"
+fi
 
 # -------------------------------------------------------------
 # 通用:安装完成后的验证(依赖导入 + 级联森林功能自测 + 项目模块)
