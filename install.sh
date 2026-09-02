@@ -93,6 +93,33 @@ PYEOF
 }
 
 # -------------------------------------------------------------
+# 多镜像源回退安装:清华源缺 torch 等大包时,自动换源重试
+# 可用环境变量 PIP_INDEXES 覆盖(空格分隔的 index-url 列表)
+# -------------------------------------------------------------
+PIP_INDEXES="${PIP_INDEXES:-\
+https://pypi.tuna.tsinghua.edu.cn/simple \
+https://mirrors.aliyun.com/pypi/simple/ \
+https://mirrors.cloud.tencent.com/pypi/simple \
+https://pypi.org/simple}"
+
+pip_install_multi() {
+    local idx rc=1
+    for idx in $PIP_INDEXES; do
+        log "尝试镜像源: $idx"
+        if python -m pip install \
+                --index-url "$idx" \
+                --extra-index-url https://pypi.org/simple \
+                --trusted-host "$(echo "$idx" | awk -F/ '{print $3}')" \
+                --trusted-host pypi.org --trusted-host files.pythonhosted.org \
+                --timeout 120 --retries 3 "$@"; then
+            rc=0; break
+        fi
+        log "该源失败,换下一个源重试..."
+    done
+    return $rc
+}
+
+# -------------------------------------------------------------
 # 方式 A:conda + Python 3.8
 # -------------------------------------------------------------
 install_conda() {
@@ -110,11 +137,15 @@ install_conda() {
 
     log "安装依赖(requirements-3.8.txt,deep-forest 使用 cp38 预编译 wheel)..."
     python -m pip install --upgrade pip
-    python -m pip install -r requirements-3.8.txt \
-        || die "依赖安装失败。网络慢可先配置 pip 镜像源(见 INSTALL.md)"
+    pip_install_multi -r requirements-3.8.txt \
+        || die "依赖安装失败。见 INSTALL.md 的镜像源/代理章节"
 
     verify_install
-    log "完成!使用方式: conda activate $CONDA_ENV_NAME"
+    echo
+    log "完成!下一步请手动执行(脚本无法为你所在的 shell 激活环境):"
+    echo
+    echo "    conda activate $CONDA_ENV_NAME"
+    echo
 }
 
 # -------------------------------------------------------------
@@ -231,7 +262,7 @@ install_venv() {
 
     log "安装依赖(requirements-3.11.txt,torch 从 PyPI 安装)..."
     python -m pip install --upgrade pip
-    python -m pip install -r requirements-3.11.txt \
+    pip_install_multi -r requirements-3.11.txt \
         || die "依赖安装失败。网络慢可先配置 pip 镜像源(见 INSTALL.md)"
 
     install_deep_forest_from_source
