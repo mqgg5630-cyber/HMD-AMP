@@ -1,5 +1,28 @@
 # HMD-AMP 安装指南(Linux / WSL)
 
+## 第 0 步:网络受限?先设代理再 clone(否则 clone 本身就失败)
+
+```bash
+# 1) 在当前终端设置代理(端口以本机代理软件为准)
+export http_proxy=http://127.0.0.1:10808
+export https_proxy=http://127.0.0.1:10808
+
+# 2) 然后克隆
+git clone -b arena/01a06126-hmd-amp https://github.com/mqgg5630-cyber/HMD-AMP.git
+cd HMD-AMP
+
+# 3) 安装(代理已在环境中导出,脚本会自动沿用,无需再传 --proxy)
+bash install.sh
+```
+
+> 想让 git 永久走代理(以后每个终端都生效),可改为:
+> `git config --global http.proxy http://127.0.0.1:10808`
+> `git config --global https.proxy http://127.0.0.1:10808`
+>
+> 想让整个终端永久带代理:把第 1 步的 export 两行追加到 `~/.bashrc`。
+
+---
+
 本仓库提供一键安装脚本 `install.sh`(已在 Linux 环境实测通过):
 
 ```bash
