@@ -4,6 +4,18 @@
 This repository contains code for the paper ***HMD-AMP***.
 
 
+## Quick Install (Linux / WSL)
+A one-click install script is provided (tested). It sets up the full Python
+environment automatically:
+
+```bash
+bash install.sh        # auto: conda + Python 3.8 if conda exists, else venv + Python 3.9~3.11
+bash install.sh --conda   # force conda path (matches the original README, no compilation)
+bash install.sh --venv    # force venv path (builds deep-forest from source)
+```
+
+Then activate the environment (`conda activate HMD-AMP` or `source .venv/bin/activate`).
+Details, mirrors and FAQ: [INSTALL.md](INSTALL.md).
 
 
 
