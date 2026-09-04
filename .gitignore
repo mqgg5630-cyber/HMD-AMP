@@ -2,3 +2,12 @@ __pycache__/
 *.so
 model/
 .ipynb_checkpoints
+
+# 下载的训练数据与模型权重（体积大，不入库；用 script/download_training_data.py 获取）
+data/
+emb/
+*.pth
+*.npy
+*.faa
+*.faa.gz
+*.part

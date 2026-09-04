@@ -44,6 +44,31 @@ You can find the training script in `script`.
 
 The training data can be obtained from [Zenodo](https://doi.org/10.5281/zenodo.15583284).
 
+### Download & prepare training data (one command)
+
+Helper scripts are provided in `script/` to download the official training data from
+Zenodo and convert it into the `fasta + label.npy` format expected by the training scripts:
+
+```bash
+# download (training_data.zip, ~200 KB; verified by MD5, resumable) and prepare
+python script/download_training_data.py --out data --prepare
+```
+
+This produces:
+
+- `data/processed/amp_task/amp_train.fasta` + `amp_label.npy` — for the **AMP/non-AMP** task (the official set: 5985 AMPs + 5985 non-AMPs);
+- `data/processed/target_tasks/<Target>/...` — for the six **target-group** tasks.
+
+Note: the Zenodo release contains the AMP/non-AMP sequences but **not** the per-target
+activity labels. The prepare script writes a `target_annotation_template.csv` for you to
+fill with target activity (1/0) from AMP databases such as APD3, DBAASP, DRAMP or dbAMP,
+then re-run with `--annotation your.csv`. See [`script/数据准备说明.md`](script/数据准备说明.md)
+(Chinese, step-by-step) for the full workflow.
+
+The other (multi-GB) files on Zenodo (`8mammalian.faa.gz`, `swineGutORFs.faa.gz`, ...) are
+the ORFs used for the paper's genome mining, **not** training data; download them only if
+you reproduce that step (`python script/download_training_data.py --extra`).
+
 ## Prediction
 `prediction.py` contains the script for AMP and its target groups prediction.
 

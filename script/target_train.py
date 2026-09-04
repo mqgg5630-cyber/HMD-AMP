@@ -29,6 +29,8 @@ if __name__ == '__main__':
     
     parser.add_argument(
         "--emb",
+        "--emb_path",
+        dest="emb_path",
         type=str,
         default=None,
         help='directory of the embeddings'

@@ -192,7 +192,7 @@ def target_feature_extraction(args, fold_number):
     
     # load feature_extraction model
     model_test = ampPredictor(esm_model)
-    checkpoint = torch.load(args.ftmodel_save_path+f'/{args.target}_fold{fold_number}'+'/'+'model_checkpoint_fold.pth')
+    checkpoint = torch.load(args.ftmodel_save_path+f'/{args.target}_fold{fold_number}'+'/'+'model_checkpoint.pth')
     # Load the parameters into the corresponding parts of the model
     model_test.predictor.load_state_dict(checkpoint['predictor'])
     model_test.outlinear.load_state_dict(checkpoint['outlinear'])
@@ -304,8 +304,11 @@ if __name__ == '__main__':
     ensure_dir(args.ftmodel_save_path)
     ensure_dir(args.emb_path)
     
-    # if no available fintuned model
-    if not os.path.exists(args.ftmodel_save_path+'/'+'model_checkpoint.pth'):
+    # if no available finetuned model (checkpoints are saved per-fold under
+    # <ftmodel_save_path>/<target>_fold<i>/model_checkpoint.pth)
+    fold_ckpt = os.path.join(
+        args.ftmodel_save_path, f'{args.target}_fold0', 'model_checkpoint.pth')
+    if not os.path.exists(fold_ckpt):
         # 5-fold fine-tuning, will produce 5 models corresponding to 5 folds.
         # remove for loop if only need to train once
         for i in range(0, 4):
